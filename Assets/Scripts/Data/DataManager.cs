@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Api;
 using Newtonsoft.Json;
+using PopUps;
 using Proyecto26;
+using UI;
 using UnityEngine;
 
 namespace Data
@@ -13,10 +15,11 @@ namespace Data
         public List<Data> Data => _data;
 
         [SerializeField] private ApiManager apiManager;
-
+        [SerializeField] private Loader loader;
+        [SerializeField] private ErrorPopUp errorPopUp;
+        
         private List<Data> _data;
-
-
+        
         public event Action OnDataUpdated;
         public event Action<Data> OnButtonAdded;
         public event Action<Data> OnElementUpdate;
@@ -28,7 +31,15 @@ namespace Data
             apiManager.PutRequestCallback += PutRequestCallback;
             apiManager.DeleteRequestCallback += DeleteRequestCallback;
             apiManager.PostRequestCallback += PostRequestCallback;
+            apiManager.OnError += OnErrorCatched;
             GetBaseData();
+        }
+
+        private void OnErrorCatched(string obj)
+        {
+            loader.Hide();
+            errorPopUp.Init(obj);
+            errorPopUp.Open();
         }
 
         private void PostRequestCallback(ResponseHelper obj)
@@ -62,11 +73,7 @@ namespace Data
             }
 
             OnElementUpdate?.Invoke(data);
-        }
-
-        private void GetBaseData()
-        {
-            apiManager.Get(ApiConstants.BtnEndpoint);
+            return;
         }
 
         private void GetDataCallback(ResponseHelper obj)
@@ -88,6 +95,12 @@ namespace Data
             }
 
             OnDataUpdated?.Invoke();
+            return;
+        }
+
+        private void GetBaseData()
+        {
+            apiManager.Get(ApiConstants.BtnEndpoint);
         }
     }
 

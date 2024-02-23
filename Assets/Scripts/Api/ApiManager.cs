@@ -15,11 +15,14 @@ namespace Api
         public event Action<ResponseHelper> PutRequestCallback;
         public event Action<ResponseHelper> DeleteRequestCallback;
 
+        public event Action<string> OnError;
+
         public void Get(string endPoint)
         {
             loader.Show();
             RestClient.Get(ApiConstants.BaseUrl + endPoint)
-                .Then(response => GetRequestCallback?.Invoke(response));
+                .Then(response => GetRequestCallback?.Invoke(response))
+                .Catch(e => OnError?.Invoke(e.Message));
         }
 
         public void Post(string endPoint, object requestBody)
@@ -27,7 +30,8 @@ namespace Api
             loader.Show();
             var json = JsonConvert.SerializeObject(requestBody);
             RestClient.Post(ApiConstants.BaseUrl + endPoint, json)
-                .Then(response => PostRequestCallback?.Invoke(response));
+                .Then(response => PostRequestCallback?.Invoke(response))
+                .Catch(e => OnError?.Invoke(e.Message));
         }
 
         public void Put(string endPoint, object requestBody)
@@ -35,14 +39,16 @@ namespace Api
             loader.Show();
             var json = JsonConvert.SerializeObject(requestBody);
             RestClient.Put(ApiConstants.BaseUrl + endPoint, json)
-                .Then(response => PutRequestCallback?.Invoke(response));
+                .Then(response => PutRequestCallback?.Invoke(response))
+                .Catch(e => OnError?.Invoke(e.Message));
         }
 
         public void Delete(string endPoint)
         {
             loader.Show();
             RestClient.Delete(ApiConstants.BaseUrl + endPoint)
-                .Then(response => DeleteRequestCallback?.Invoke(response));
+                .Then(response => DeleteRequestCallback?.Invoke(response))
+                .Catch(e => OnError?.Invoke(e.Message));
         }
     }
 
